@@ -3,7 +3,7 @@ local damageTable = {} -- Stored {playername: {attacker: damage}}
 -- This variable stores the last time a player was attacked. Resets if no damage for 5 min
 local lastHit = {} -- Stored {player_name: time}
 
-minetest.after(time, func, ...)
+--minetest.after(time, func, ...)
 
 local function get_name_damage_player(name)
     local t = damageTable[name]
@@ -53,10 +53,20 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
     end
 )
 -- Handles
-minetest.item_drop(itemstack, dropper, pos)
+--minetest.item_drop(itemstack, dropper, pos)
 
-minetest.register_allow_player_inventory_action(function(player, action, inventory, inventory_info)
-    minetest.debug("test")
-    minetest.debug(action)
+minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
+    minetest.chat_send_player(player:get_player_name(), action)
+    for index, name in pairs(inventory:get_location()) do
+        minetest.chat_send_player(player:get_player_name(), index.. ' ' .. tostring(name))
+        end
+    end
+)
+
+minetest.register_on_player_receive_fields(function(player, formname, fields)
+    minetest.chat_send_player(player:get_player_name(), formname)
+    for index, name in pairs(fields) do
+        minetest.chat_send_player(player:get_player_name(), index.. ' ' .. tostring(name))
+        end
     end
 )
