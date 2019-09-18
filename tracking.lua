@@ -1,13 +1,9 @@
-minetest.register_allow_player_inventory_action(function(player, action, inventory, inventory_info)
-    minetest.debug("test")
-    minetest.debug(action)
-    end
-)
-
 -- Time to do damage calculation and see who to award a pearl to
 local damageTable = {} -- Stored {playername: {attacker: damage}}
 -- This variable stores the last time a player was attacked. Resets if no damage for 5 min
 local lastHit = {} -- Stored {player_name: time}
+
+minetest.after(time, func, ...)
 
 local function get_name_damage_player(name)
     local t = damageTable[name]
@@ -31,6 +27,7 @@ local function get_name_damage_player(name)
     if mAttacker == "" then return nil else return mAttacker end
 end
 
+-- Handles player death and if they should be imprisoned
 minetest.register_on_dieplayer(function(player)
     local name = player:get_player_name()
     -- Now lets see if there was a player that damaged them
@@ -39,23 +36,10 @@ minetest.register_on_dieplayer(function(player)
     if attacker == nil then
         return
         end
-    -- Now we need to award a prison item to the attacker.
-    local location = {type="player", name=attacker}
-    local inv = minetest.get_inventory(location)
-    local stack = {name="prisonpearl:pearl", count=1, metadata=""}
-    for i, item in ipairs(inv:get_list("main")) do -- Update the item, 
-        if item:get_name() == "prisonpearl:pearl" then -- Now we need to check if it has metadata or not
-            local meta = item:get_meta()
-            if not meta:contains("prisoner") then -- If no meta data then we know that we can use it
-                meta:set_string("prisoner", name)
-                meta:set_string("description", name .. " has been trapped")
-                inv:set_stack("main", i, item)
-                break
-                end
-            end
-        end
+    pp.manager:award_pearl(name, attacker)
     end
 )
+-- Handles calculating player damage to see who gets awarded an imprisonment
 minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
     local playerName, hitterName = player:get_player_name(), hitter:get_player_name()
     if damageTable[playerName] == nil then
@@ -66,5 +50,13 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
         tab[hitterName] = 0
         end
     tab[hitterName] = tab[hitterName] + damage
+    end
+)
+-- Handles
+minetest.item_drop(itemstack, dropper, pos)
+
+minetest.register_allow_player_inventory_action(function(player, action, inventory, inventory_info)
+    minetest.debug("test")
+    minetest.debug(action)
     end
 )

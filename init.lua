@@ -25,6 +25,9 @@ minetest.register_craftitem("prisonpearl:pearl", {
 })
 
 -- Lets handle all situations when a prisonshard is moved
-local tracker = dofile(modpath .. "/tracking.lua")
-
--- -------
+pp = {}
+pp.manager = {}
+pp.tracker = {}
+dofile(modpath .. "/manager.lua")
+dofile(modpath .. "/tracking.lua")
+return pp
