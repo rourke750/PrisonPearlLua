@@ -37,6 +37,7 @@ minetest.register_on_dieplayer(function(player)
         return
         end
     pp.manager:award_pearl(name, attacker)
+    minetest.chat_send_player(attacker, "You have imprisoned " .. name .. "!")
     end
 )
 -- Handles calculating player damage to see who gets awarded an imprisonment
@@ -56,17 +57,9 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 --minetest.item_drop(itemstack, dropper, pos)
 
 minetest.register_on_player_inventory_action(function(player, action, inventory, inventory_info)
-    minetest.chat_send_player(player:get_player_name(), action)
+    --minetest.chat_send_player(player:get_player_name(), action)
     for index, name in pairs(inventory:get_location()) do
-        minetest.chat_send_player(player:get_player_name(), index.. ' ' .. tostring(name))
-        end
-    end
-)
-
-minetest.register_on_player_receive_fields(function(player, formname, fields)
-    minetest.chat_send_player(player:get_player_name(), formname)
-    for index, name in pairs(fields) do
-        minetest.chat_send_player(player:get_player_name(), index.. ' ' .. tostring(name))
+        --minetest.chat_send_player(player:get_player_name(), index.. ' ' .. tostring(name))
         end
     end
 )

@@ -1,26 +1,23 @@
 local imprisoned_players = {} -- name : {pearl details} 
-
+local storage = minetest.get_mod_storage()
 local function save_pearls()
-    local modpath = minetest.get_modpath(minetest.get_current_modname())
-    pp.table.save(imprisoned_players, modpath .. "/pearls.txt")
+    storage:set_string("pearls", minetest.serialize(imprisoned_players))
+    minetest.debug("Saved Pearls")
+    minetest.debug(minetest.serialize(imprisoned_players))
 end
 
 local function load_pearls()
-    local modpath = minetest.get_modpath(minetest.get_current_modname())
-    local file = io.open(modpath .. "/pearls.txt", "r")
-    if file then
-        imprisoned_players = pp.table.load(modpath .. "/pearls.txt")
+    imprisoned_players = minetest.deserialize(storage:get_string("pearls"))
+    if imprisoned_players == nil then
+        imprisoned_players = {}
         end
+    minetest.debug("Loaded Pearls")
 end
 
-minetest.register_on_shutdown(function()
-    save_pearls()
-end)
-minetest.register_on_mods_loaded(function()
-    
-end)
+--minetest.register_on_shutdown(function()
+--    save_pearls()
+--end)
 load_pearls()
-
 -- This function let's the mod know that we need to start tracking a pearl created from someone dying
 function pp.manager:award_pearl(victum, attacker)
     -- Now we need to award a prison item to the attacker.
@@ -41,11 +38,11 @@ function pp.manager:award_pearl(victum, attacker)
     -- Now we want to add the player to the db tracking
     imprisoned_players[victum] = {name=victum, location=location, isDirty=true}
     -- Now we want to ban the player
-    minetest.ban_player(victum)
+    -- minetest.ban_player(victum)
+    save_pearls()
 end
 
 function pp.manager:update_pearl_location(pearl, location)
-    minetest.debug("success")
     pearl.location = location
     pearl.isDirty = true
 end
@@ -56,6 +53,13 @@ end
 
 function pp.manager:get_pearl_by_name(name)
     return imprisoned_players[name]
+end
+
+function pp.manager:free_pearl(name)
+    imprisoned_players[name] = nil
+    minetest.unban_player_or_ip(name)
+    save_pearls()
+    return not pp.manager:is_imprisoned(name)
 end
 
 local function get_pos_by_type(pearl)

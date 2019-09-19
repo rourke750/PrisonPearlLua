@@ -13,7 +13,20 @@ minetest.register_craft({
 })
 
 local function pearl_on_use(itemstack, user)
-    minetest.chat_send_player(user:get_player_name(), "test")
+    -- Let's make sure this pearl is used
+    local meta = itemstack:get_meta()
+    if meta:contains("prisoner") then
+        local name = meta:get_string("prisoner")
+        if pp.manager:is_imprisoned(name) and pp.manager:free_pearl(name) then
+            minetest.chat_send_player(user:get_player_name(), "Player " .. name .. " has been freed.")
+            local meta = itemstack:get_meta()
+            meta:set_string("prisoner", "")
+            meta:set_string("description", "Prison Pearl")
+            return itemstack
+        else
+            minetest.chat_send_player(user:get_player_name(), "Player is not imprisoned.")
+            end
+        end
 end
 
 minetest.register_craftitem("prisonpearl:pearl", {
@@ -25,7 +38,7 @@ minetest.register_craftitem("prisonpearl:pearl", {
     on_drop = function(itemstack, dropper, pos)
         local meta = itemstack:get_meta()
         if meta:contains("prisoner") then
-            name = meta:get_string("prisoner")
+            local name = meta:get_string("prisoner")
             pearl = pp.manager:get_pearl_by_name(name)
             if pearl == nil then
                 minetest.debug("Faulty pearl detected with name: " .. name .. " deleting.")
@@ -33,7 +46,7 @@ minetest.register_craftitem("prisonpearl:pearl", {
                 meta:set_string("prisoner", "")
                 meta:set_string("description", "Prison Pearl")
             else 
-                location = {type="ground", pos=pos}
+                local location = {type="ground", pos=pos}
                 pp.manager:update_pearl_location(pearl, location)
                 end
             end
@@ -47,8 +60,6 @@ minetest.register_craftitem("prisonpearl:pearl", {
 pp = {}
 pp.manager = {}
 pp.tracker = {}
-pp.table = {}
-dofile(modpath .. "/table.save-1.0.lua" )
 dofile(modpath .. "/manager.lua")
 dofile(modpath .. "/tracking.lua")
 return pp
